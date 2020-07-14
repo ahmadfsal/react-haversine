@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from 'react'
+import React, { Fragment, useState, useEffect } from 'react'
 import MapsFilter from './views/maps-filter'
 import MapsView from './views/maps'
 import ModalLogin from './views/modal-login'
@@ -19,6 +19,10 @@ const MainPage = () => {
     const [showModalLogin, setShowModalLogin] = useState(false)
     const [routeDestination, setRouteDestination] = useState([])
     const [showModalAllList, setShowModalAllList] = useState(false)
+
+    useEffect(() => {
+        fetchMyLocation()
+    }, [])
 
     const fetchSchool = () => {
         fetch(API_URL, {
@@ -135,15 +139,16 @@ const MainPage = () => {
 
     return (
         <Fragment>
-            <Header
+            {/* <Header
                 title='Haversine'
                 buttonTitle='Login'
                 onButtonClick={() => handleModalLogin('CANCEL')}
-            />
+            /> */}
 
             <MapsFilter
                 handleFindMyLocation={handleFindMyLocation}
                 handleModalAllList={handleModalAllList}
+                handleModalLogin={handleModalLogin}
                 handleRute={handleRute}
                 isLoading={isLoading}
                 schoolList={schoolList}
