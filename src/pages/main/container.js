@@ -1,7 +1,8 @@
-import React, { Fragment, useState, useEffect } from 'react'
+import React, { Fragment, useState } from 'react'
 import MapsFilter from './views/maps-filter'
 import MapsView from './views/maps'
 import ModalLogin from './views/modal-login'
+import ModalAllList from './views/modal-all-list'
 import { Header } from 'libs'
 import { useHistory } from 'react-router-dom'
 import { API_URL } from 'constant'
@@ -15,44 +16,28 @@ const MainPage = () => {
     const [isLoading, setLoading] = useState(false)
     const [myLocation, setMyLocation] = useState([])
     const [schoolList, setSchoolList] = useState([])
-    const [schoolValue, setSchoolValue] = useState('')
-    const [resultMessage, setResultMessage] = useState('')
     const [showModalLogin, setShowModalLogin] = useState(false)
-
-    useEffect(() => {
-        fetchMyLocation()
-    }, [])
-
-    useEffect(() => {
-        fetchSchool()
-    }, [])
+    const [routeDestination, setRouteDestination] = useState([])
+    const [showModalAllList, setShowModalAllList] = useState(false)
 
     const fetchSchool = () => {
         fetch(API_URL, {
             method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            }
+            headers: { 'Content-Type': 'application/json' }
         })
-        .then(res => res.json())
-        .then(resJson => {
-            let initialSchool = []
-            resJson.map(item => {
-                initialSchool.push({
-                    text: item.name,
-                    value: `${item.lat}__${item.lng}`
-                })
+            .then((res) => res.json())
+            .then((resJson) => {
+                const haversineResult = resJson.map((item) =>
+                    haversineFormula(item)
+                )
+                setSchoolList(haversineResult)
             })
-            setSchoolList(initialSchool)
-        })
-        .catch(err => console.log(err))
-    }
-
-    const handleChangeSchool = (value) => {
-        setSchoolValue(value)
+            .catch((err) => console.log(err))
     }
 
     const handleFindMyLocation = () => fetchMyLocation()
+
+    const handleModalAllList = () => setShowModalAllList(!showModalAllList)
 
     const fetchMyLocation = () => {
         setLoading(true)
@@ -62,6 +47,10 @@ const MainPage = () => {
                     const { coords } = item
                     if (coords) {
                         setMyLocation([coords.latitude, coords.longitude])
+
+                        if (myLocation.length > 0) {
+                            fetchSchool()
+                        }
                     }
                 })
             } catch (error) {
@@ -70,6 +59,13 @@ const MainPage = () => {
                 setLoading(false)
             }
         }, 1500)
+    }
+
+    const handleRute = (item) => {
+        const lat = parseFloat(item.lat)
+        const lng = parseFloat(item.lng)
+
+        setRouteDestination([lat, lng])
     }
 
     const handleModalLogin = (type) => {
@@ -105,31 +101,36 @@ const MainPage = () => {
         }
     }
 
-    const handleResetFilter = () => {
-        setResultMessage('')
-    }
-
-    const handleFilter = () => {
+    const haversineFormula = (item) => {
         const R = 6371e3 // metres
-        const lat1 = myLocation[0]
-        const lon1 = myLocation[1]
-        const lat2 = -6.7252
-        const lon2 = 108.5662        
+        const userLat = myLocation[0]
+        const userLng = myLocation[1]
+        const schoolLat = item.lat
+        const schoolLng = item.lng
 
-        const φ1 = (lat1 * Math.PI) / 180 // φ, λ in radians
-        const φ2 = (lat2 * Math.PI) / 180
-        const Δφ = ((lat2 - lat1) * Math.PI) / 180
-        const Δλ = ((lon2 - lon1) * Math.PI) / 180
+        const φ1 = (userLat * Math.PI) / 180 // φ, λ in radians
+        const φ2 = (schoolLat * Math.PI) / 180
+        const Δφ = ((schoolLat - userLat) * Math.PI) / 180
+        const Δλ = ((schoolLng - userLng) * Math.PI) / 180
 
         const a =
             Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
             Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2)
-
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-
         const d = R * c // in metres
 
-        setResultMessage(d)
+        const toKilometres = d / 1000 // convert metres to kilometres
+        const minimumDistance = 10 // in kilometres
+
+        let newObj = Object.assign({}, item)
+
+        if (parseInt(toKilometres.toFixed(1)) <= minimumDistance) {
+            newObj.distance_with_yours = toKilometres.toFixed(1)
+        } else {
+            newObj.distance_with_yours = null
+        }
+
+        return newObj
     }
 
     return (
@@ -141,14 +142,11 @@ const MainPage = () => {
             />
 
             <MapsFilter
-                handleChangeSchool={handleChangeSchool}
-                handleFilter={handleFilter}
                 handleFindMyLocation={handleFindMyLocation}
-                handleResetFilter={handleResetFilter}
+                handleModalAllList={handleModalAllList}
+                handleRute={handleRute}
                 isLoading={isLoading}
-                resultMessage={resultMessage}
                 schoolList={schoolList}
-                schoolValue={schoolValue}
             />
 
             <ModalLogin
@@ -159,7 +157,16 @@ const MainPage = () => {
                 username={username}
             />
 
-            <MapsView myLocation={myLocation} />
+            <ModalAllList
+                isShow={showModalAllList}
+                handleModalAllList={handleModalAllList}
+                schoolList={schoolList}
+            />
+
+            <MapsView
+                myLocation={myLocation}
+                routeDestination={routeDestination}
+            />
         </Fragment>
     )
 }
