@@ -4,11 +4,14 @@ import { Dropdown, SideBar, Button } from 'libs'
 
 const MapsFilter = (props) => {
     const {
-        isLoading,
+        handleChangeSchool,
         handleFilter,
         handleFindMyLocation,
+        handleResetFilter,
+        isLoading,
         resultMessage,
-        handleResetFilter
+        schoolList,
+        schoolValue
     } = props
 
     const buttonClass = classnames('is-fullwidth', isLoading && 'is-loading')
@@ -30,9 +33,10 @@ const MapsFilter = (props) => {
 
             <Dropdown
                 label='Pilih Tujuan'
-                objectValue={[]}
+                objectValue={schoolList}
                 placeholder='Pilih Tujuan'
-                onChange={() => {}}
+                onChange={(e) => handleChangeSchool(e.target.value)}
+                value={schoolValue}
             />
 
             <div className='columns is-margin-top-smaller'>

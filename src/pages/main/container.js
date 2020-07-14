@@ -4,21 +4,53 @@ import MapsView from './views/maps'
 import ModalLogin from './views/modal-login'
 import { Header } from 'libs'
 import { useHistory } from 'react-router-dom'
+import { API_URL } from 'constant'
 import './style.scss'
 
 const MainPage = () => {
-    const geolocation = navigator.geolocation
     const history = useHistory()
-    const [myLocation, setMyLocation] = useState([])
-    const [isLoading, setLoading] = useState(false)
-    const [showModalLogin, setShowModalLogin] = useState(false)
+    const geolocation = navigator.geolocation
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
+    const [isLoading, setLoading] = useState(false)
+    const [myLocation, setMyLocation] = useState([])
+    const [schoolList, setSchoolList] = useState([])
+    const [schoolValue, setSchoolValue] = useState('')
     const [resultMessage, setResultMessage] = useState('')
+    const [showModalLogin, setShowModalLogin] = useState(false)
 
     useEffect(() => {
         fetchMyLocation()
     }, [])
+
+    useEffect(() => {
+        fetchSchool()
+    }, [])
+
+    const fetchSchool = () => {
+        fetch(API_URL, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(res => res.json())
+        .then(resJson => {
+            let initialSchool = []
+            resJson.map(item => {
+                initialSchool.push({
+                    text: item.name,
+                    value: `${item.lat}__${item.lng}`
+                })
+            })
+            setSchoolList(initialSchool)
+        })
+        .catch(err => console.log(err))
+    }
+
+    const handleChangeSchool = (value) => {
+        setSchoolValue(value)
+    }
 
     const handleFindMyLocation = () => fetchMyLocation()
 
@@ -109,11 +141,14 @@ const MainPage = () => {
             />
 
             <MapsFilter
-                handleFindMyLocation={handleFindMyLocation}
+                handleChangeSchool={handleChangeSchool}
                 handleFilter={handleFilter}
+                handleFindMyLocation={handleFindMyLocation}
                 handleResetFilter={handleResetFilter}
                 isLoading={isLoading}
                 resultMessage={resultMessage}
+                schoolList={schoolList}
+                schoolValue={schoolValue}
             />
 
             <ModalLogin
