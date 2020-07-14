@@ -36,12 +36,19 @@ const Modal = (props) => {
                 </header>
                 <section className='modal-card-body'>{children}</section>
                 <footer className='modal-card-foot'>
-                    <Button className='button is-success' onClick={onPositiveButton}>
-                        {positiveButtonTitle}
-                    </Button>
-                    <Button className='button' onClick={onNegativeButton}>
-                        {negativeButtonTitle}
-                    </Button>
+                    {positiveButtonTitle && onPositiveButton && (
+                        <Button
+                            className='button is-success'
+                            onClick={onPositiveButton}
+                        >
+                            {positiveButtonTitle}
+                        </Button>
+                    )}
+                    {negativeButtonTitle && onNegativeButton && (
+                        <Button className='button' onClick={onNegativeButton}>
+                            {negativeButtonTitle}
+                        </Button>
+                    )}
                 </footer>
             </div>
         </div>
