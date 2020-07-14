@@ -11,6 +11,7 @@ const Header = (props) => {
             <div id='navbarBasicExample' className='navbar-menu'>
                 <div className='navbar-start'>
                     <a
+                        href='#'
                         className='navbar-item has-text-white is-size-5 has-text-weight-bold'
                     >
                         {title}

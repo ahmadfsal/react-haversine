@@ -1,67 +1,87 @@
-import React from 'react'
+import React, { useState } from 'react'
 import classnames from 'classnames'
-import { Dropdown, SideBar, Button } from 'libs'
+import { SideBar, Button, Card } from 'libs'
 
 const MapsFilter = (props) => {
     const {
-        handleChangeSchool,
-        handleFilter,
         handleFindMyLocation,
-        handleResetFilter,
+        handleModalAllList,
+        handleModalLogin,
+        handleRute,
         isLoading,
-        resultMessage,
-        schoolList,
-        schoolValue
+        schoolList
     } = props
+    const [availableSchool, setAvailableSchool] = useState(null)
 
-    const buttonClass = classnames('is-fullwidth', isLoading && 'is-loading')
+    const buttonClass = classnames(
+        'is-fullwidth is-link',
+        isLoading && 'is-loading'
+    )
     const textFindLocation = classnames(
         'text-location is-size-7',
-        isLoading ? 'has-text-danger' : 'has-text-success	',
         !isLoading && 'has-text-weight-bold'
     )
 
     return (
-        <SideBar>
-            <label className='label'>Titik awal</label>
-            <Button className={buttonClass} onClick={handleFindMyLocation}>
-                Lokasi Anda
-            </Button>
-            <p className={textFindLocation}>
-                {isLoading ? 'Sedang mencari lokasi...' : '√ Lokasi ditemukan'}
-            </p>
-
-            <Dropdown
-                label='Pilih Tujuan'
-                objectValue={schoolList}
-                placeholder='Pilih Tujuan'
-                onChange={(e) => handleChangeSchool(e.target.value)}
-                value={schoolValue}
-            />
-
-            <div className='columns is-margin-top-smaller'>
-                <div className='column'>
-                    <Button
-                        className='is-fullwidth is-success'
-                        onClick={handleFilter}
-                    >
-                        Cari
-                    </Button>
+        <SideBar className="has-background-info-light">
+            <div className='level'>
+                <div className='level-left has-text-weight-bold is-size-5'>
+                    Haversine
                 </div>
-                <div className='column'>
-                    <Button
-                        className='is-fullwidth is-light is-danger'
-                        onClick={handleResetFilter}
+                <div className='level-right'>
+                    <p
+                        className='is-size-6 has-text-link clickable has-text-right'
+                        onClick={() => handleModalLogin('CANCEL')}
                     >
-                        Reset
-                    </Button>
+                        Login
+                    </p>
                 </div>
             </div>
+            <div className='separator is-margin-bottom-smaller'></div>
 
-            {resultMessage !== '' && (
-                <p className='is-margin-top-smaller'>
-                    Hasil: <br />
-                    {isFinite ? parseInt(resultMessage).toFixed(2) : ''}
+            <Button className={buttonClass} onClick={handleFindMyLocation}>
+                Cari Lokasi Anda
+            </Button>
+
+            <p className={textFindLocation}>
+                {isLoading
+                    ? 'Sedang mencari lokasi terdekat...'
+                    : availableSchool && availableSchool > 0
+                    ? `√ ${availableSchool} Lokasi terdekat ditemukan`
+                    : 'Tidak ada sekolah ditemukan dengan jarak 10km'}
+            </p>
+
+            {!isLoading &&
+                schoolList.length > 0 &&
+                schoolList.map((item, index) => {
+                    if (item.distance_with_yours) {
+                        setAvailableSchool(schoolList.length)
+                        return (
+                            <Card
+                                key={index}
+                                className='has-background-primary-light is-margin-bottom'
+                            >
+                                <b>{item.name}</b>
+                                <p className='is-size-7'>
+                                    Jarak : {item.distance_with_yours}km
+                                </p>
+                                <p
+                                    className='is-size-7 is-margin-top-smaller has-text-link-dark clickable'
+                                    onClick={() => handleRute(item)}
+                                >
+                                    Rute
+                                </p>
+                            </Card>
+                        )
+                    }
+                })}
+
+            {!isLoading && availableSchool && availableSchool.length >= 3 && (
+                <p
+                    className='is-size-7 is-margin-top-smaller has-text-link clickable has-text-right'
+                    onClick={handleModalAllList}
+                >
+                    Lihat Semua
                 </p>
             )}
         </SideBar>
