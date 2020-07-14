@@ -31,9 +31,16 @@ const Content = (props) => {
                     <tbody>
                         {schoolList.map((item, index) => (
                             <tr key={index}>
-                                <td>{item.name}</td>
+                                <td
+                                    className='has-text-info'
+                                    onClick={() => {
+                                        handleModalAddEdit('EDIT', item.id)
+                                    }}
+                                >
+                                    {item.name}
+                                </td>
                                 <td>{item.lat}</td>
-                                <td>{item.lngt}</td>
+                                <td>{item.lng}</td>
                             </tr>
                         ))}
                     </tbody>
