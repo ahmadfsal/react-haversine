@@ -10,8 +10,10 @@ const Modal = (props) => {
         titleClassName,
         onPositiveButton,
         onNegativeButton,
+        onNegativeButton2,
         positiveButtonTitle,
         negativeButtonTitle,
+        negativeButtonTitle2,
         isShow
     } = props
     const classes = classnames('modal', isShow && 'is-active', className)
@@ -42,6 +44,14 @@ const Modal = (props) => {
                             onClick={onPositiveButton}
                         >
                             {positiveButtonTitle}
+                        </Button>
+                    )}
+                    {negativeButtonTitle2 && onNegativeButton2 && (
+                        <Button
+                            className='button is-danger is-light'
+                            onClick={onNegativeButton2}
+                        >
+                            {negativeButtonTitle2}
                         </Button>
                     )}
                     {negativeButtonTitle && onNegativeButton && (
