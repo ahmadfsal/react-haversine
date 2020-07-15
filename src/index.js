@@ -2,14 +2,17 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import Main from 'pages'
 import { BrowserRouter } from 'react-router-dom'
+import { Store } from 'context/store'
 import * as serviceWorker from './serviceWorker'
 import 'assets/styles/index.scss'
 
 ReactDOM.render(
     <React.StrictMode>
-        <BrowserRouter>
-            <Main />
-        </BrowserRouter>
+        <Store>
+            <BrowserRouter>
+                <Main />
+            </BrowserRouter>
+        </Store>
     </React.StrictMode>,
     document.getElementById('root')
 )
