@@ -11,7 +11,8 @@ const AdminPage = () => {
     const defaultForm = {
         name: '',
         lat: '',
-        lng: ''
+        lng: '',
+        address: ''
     }
     const [showModalLogout, setShowModalLogout] = useState(false)
     const [schoolList, setSchoolList] = useState([])
@@ -108,11 +109,12 @@ const AdminPage = () => {
     }
 
     const handleAdd = () => {
-        const { name, lat, lng } = form
+        const { name, lat, lng, address } = form
         const body = {
             name,
             lat,
-            lng
+            lng,
+            address
         }
         fetch(API_URL, {
             method: 'POST',
@@ -135,11 +137,12 @@ const AdminPage = () => {
     }
 
     const handleEdit = () => {
-        const { name, lat, lng } = formEdit
+        const { name, lat, lng, address } = formEdit
         const body = {
             name,
             lat,
-            lng
+            lng,
+            address
         }
         fetch(`${API_URL}/${showModalAddEdit.id}`, {
             method: 'PUT',
