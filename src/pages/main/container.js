@@ -1,11 +1,13 @@
-import React, { Fragment, useState, useEffect } from 'react'
+import React, { Fragment, useState, useEffect, useContext } from 'react'
 import MapsFilter from './views/maps-filter'
 import MapsView from './views/maps'
 import ModalLogin from './views/modal-login'
 import ModalAllList from './views/modal-all-list'
-import { Header } from 'libs'
 import { useHistory } from 'react-router-dom'
 import { API_URL } from 'constant'
+import { compareArray } from 'utils'
+import { AppContext } from 'context/store'
+import { setMyLocation, setUserLocation } from 'context/actions'
 import './style.scss'
 
 const MainPage = () => {
@@ -13,9 +15,11 @@ const MainPage = () => {
     const geolocation = navigator.geolocation
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
+    const [state, dispatch] = useContext(AppContext)
     const [isLoading, setLoading] = useState(false)
-    const [myLocation, setMyLocation] = useState([])
+    const [myLocation, setCurrentLocation] = useState([])
     const [schoolList, setSchoolList] = useState([])
+    const [radiusValue, setRadiusValue] = useState(10)
     const [showModalLogin, setShowModalLogin] = useState(false)
     const [routeDestination, setRouteDestination] = useState([])
     const [showModalAllList, setShowModalAllList] = useState(false)
@@ -24,6 +28,18 @@ const MainPage = () => {
         fetchMyLocation()
     }, [])
 
+    useEffect(() => {
+        if (myLocation.length > 0) {
+            localStorage.setItem('myLocation', JSON.stringify(myLocation))
+            fetchSchool()
+        }
+
+        if (routeDestination.length > 0) {
+            localStorage.setItem('userLocation', JSON.stringify(routeDestination))
+        }
+
+    }, [myLocation, routeDestination])
+
     const fetchSchool = () => {
         fetch(API_URL, {
             method: 'GET',
@@ -31,45 +47,61 @@ const MainPage = () => {
         })
             .then((res) => res.json())
             .then((resJson) => {
-                const haversineResult = resJson.map((item) =>
-                    haversineFormula(item)
-                )
-                setSchoolList(haversineResult)
+                if (resJson) {
+                    setLoading(false)
+                    const haversineResult = resJson.map((item) =>
+                        haversineFormula(item)
+                    )
+                    const filterResult = haversineResult.filter(
+                        (item) => item.distance_with_yours !== null
+                    )
+                    const sortResult = filterResult.sort(
+                        compareArray('distance_with_yours')
+                    )
+                    setSchoolList(sortResult)
+                }
             })
             .catch((err) => console.log(err))
     }
 
-    const handleFindMyLocation = () => fetchMyLocation()
+    const handleChangeRadius = (e) => {
+        const { value } = e.target
+        setRadiusValue(value)
+    }
+
+    const handleFindMyLocation = () => {
+        if (parseInt(radiusValue) > 500) {
+            alert('Maksimal 500km')
+        } else {
+            fetchMyLocation()
+        }
+    }
 
     const handleModalAllList = () => setShowModalAllList(!showModalAllList)
 
     const fetchMyLocation = () => {
         setLoading(true)
         setTimeout(() => {
-            try {
-                geolocation.getCurrentPosition((item) => {
-                    const { coords } = item
-                    if (coords) {
-                        setMyLocation([coords.latitude, coords.longitude])
+            geolocation.getCurrentPosition((item) => {
+                const { coords } = item
+                if (coords) {
+                    const position = [coords.latitude, coords.longitude]
 
-                        if (myLocation.length > 0) {
-                            fetchSchool()
-                        }
-                    }
-                })
-            } catch (error) {
-                console.log(error)
-            } finally {
-                setLoading(false)
-            }
+                    setLoading(false)
+                    setCurrentLocation(position)
+                }
+            })
         }, 1500)
     }
 
     const handleRute = (item) => {
         const lat = parseFloat(item.lat)
         const lng = parseFloat(item.lng)
+        const position = [lat, lng]
 
-        setRouteDestination([lat, lng])
+        setRouteDestination(position)
+
+        history.go()
     }
 
     const handleModalLogin = (type) => {
@@ -124,33 +156,27 @@ const MainPage = () => {
         const d = R * c // in metres
 
         const toKilometres = d / 1000 // convert metres to kilometres
-        const minimumDistance = 10 // in kilometres
-
-        let newObj = Object.assign({}, item)
+        const minimumDistance = radiusValue // in kilometres
 
         if (parseInt(toKilometres.toFixed(1)) <= minimumDistance) {
-            newObj.distance_with_yours = toKilometres.toFixed(1)
+            item.distance_with_yours = parseInt(toKilometres.toFixed(1))
         } else {
-            newObj.distance_with_yours = null
+            item.distance_with_yours = null
         }
 
-        return newObj
+        return item
     }
 
     return (
         <Fragment>
-            {/* <Header
-                title='Haversine'
-                buttonTitle='Login'
-                onButtonClick={() => handleModalLogin('CANCEL')}
-            /> */}
-
             <MapsFilter
+                handleChangeRadius={handleChangeRadius}
                 handleFindMyLocation={handleFindMyLocation}
                 handleModalAllList={handleModalAllList}
                 handleModalLogin={handleModalLogin}
                 handleRute={handleRute}
                 isLoading={isLoading}
+                radiusValue={radiusValue}
                 schoolList={schoolList}
             />
 
@@ -165,6 +191,8 @@ const MainPage = () => {
             <ModalAllList
                 isShow={showModalAllList}
                 handleModalAllList={handleModalAllList}
+                handleRute={handleRute}
+                radiusValue={radiusValue}
                 schoolList={schoolList}
             />
 
