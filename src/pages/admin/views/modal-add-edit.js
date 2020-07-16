@@ -65,6 +65,16 @@ const ModalAddEdit = (props) => {
                         : handleChangeInput('ADD', e)
                 }}
             />
+            <Input
+                label='Address'
+                name='address'
+                value={isEdit ? formEdit.address : form.address}
+                onChange={(e) => {
+                    isEdit
+                        ? handleChangeInput('EDIT', e)
+                        : handleChangeInput('ADD', e)
+                }}
+            />
         </Modal>
     )
 }

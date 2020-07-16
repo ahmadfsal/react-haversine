@@ -20,31 +20,35 @@ const Content = (props) => {
                 </div>
             </div>
             {schoolList.length > 0 ? (
-                <table className='table is-striped is-narrow is-hoverable is-fullwidth is-margin-top'>
-                    <thead>
-                        <tr>
-                            <th>Nama</th>
-                            <th>Latitude</th>
-                            <th>Longitude</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {schoolList.map((item, index) => (
-                            <tr key={index}>
-                                <td
-                                    className='has-text-info'
-                                    onClick={() => {
-                                        handleModalAddEdit('EDIT', item.id)
-                                    }}
-                                >
-                                    {item.name}
-                                </td>
-                                <td>{item.lat}</td>
-                                <td>{item.lng}</td>
+                <div className='table-container'>
+                    <table className='table is-striped is-narrow is-hoverable is-fullwidth is-margin-top'>
+                        <thead>
+                            <tr>
+                                <th>Nama</th>
+                                <th>Latitude</th>
+                                <th>Longitude</th>
+                                <th>Address</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {schoolList.map((item, index) => (
+                                <tr key={index}>
+                                    <td
+                                        className='has-text-info'
+                                        onClick={() => {
+                                            handleModalAddEdit('EDIT', item.id)
+                                        }}
+                                    >
+                                        {item.name}
+                                    </td>
+                                    <td>{item.lat}</td>
+                                    <td>{item.lng}</td>
+                                    <td>{item.address}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             ) : (
                 <p>Tidak ada data</p>
             )}
