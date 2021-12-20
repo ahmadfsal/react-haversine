@@ -35,9 +35,11 @@ const MainPage = () => {
         }
 
         if (routeDestination.length > 0) {
-            localStorage.setItem('userLocation', JSON.stringify(routeDestination))
+            localStorage.setItem(
+                'userLocation',
+                JSON.stringify(routeDestination)
+            )
         }
-
     }, [myLocation, routeDestination])
 
     const fetchSchool = () => {
@@ -99,6 +101,7 @@ const MainPage = () => {
         const lng = parseFloat(item.lng)
         const position = [lat, lng]
 
+        localStorage.setItem('selectedSchool', JSON.stringify(item));
         setRouteDestination(position)
 
         history.go()
